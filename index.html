@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>8R秘影</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <style>
+    body {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+    video::-internal-media-controls-download-button {
+      display: none;
+    }
+    video::-webkit-media-controls-enclosure {
+      overflow: hidden;
+    }
+    video::-webkit-media-controls-panel {
+      width: calc(100% + 30px);
+    }
+  </style>
+</head>
+<body class="bg-gray-100">
+
+  <!-- 导航栏 -->
+  <nav class="bg-white shadow p-4">
+    <div class="max-w-7xl mx-auto flex justify-between items-center flex-wrap">
+            <a href="index.html" class="flex items-center gap-2">
+        <img src="logo.png" alt="8R秘影 Logo" class="h-10">
+        <span class="text-xl font-bold">8R秘影</span>
+      </a>
+      <button class="sm:hidden text-gray-600" onclick="toggleMenu()">☰</button>
+      <div id="navMenu" class="w-full sm:w-auto hidden sm:flex flex-col sm:flex-row gap-3 mt-2 sm:mt-0">
+        <a href="https://8ryy1354.github.io/" target="_blank" class="text-gray-700 hover:text-blue-600">8R FILM</a>
+        <a href="https://github.com/8ryy1354/Cloudflare_vless_trojan" target="_blank" class="text-gray-700 hover:text-blue-600">8R FILM官方节点</a>
+        <a href="https://www.idatariver.com/zh-cn/project/8r-film%E6%B0%B8%E4%B9%85%E4%BC%9A%E5%91%98%E8%B4%A6%E5%8F%B7-3f11" target="_blank" class="text-gray-700 hover:text-blue-600">购买会员账号</a>
+        <a href="https://slightlyrudge.github.io/index.html" target="_blank" class="text-gray-700 hover:text-blue-600">金点子担保</a>
+        <a href="clarify.html" class="text-gray-700 hover:text-blue-600">常见问题</a>
+        <a href="mail.html" class="text-gray-700 hover:text-blue-600">联系我们</a>
+        <div id="userInfo" class="text-gray-700 hover:text-blue-600 cursor-pointer" onclick="handleAuthClick()">登录</div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="p-4">
+    <h1 class="text-2xl font-bold mb-4">📁 视频分类</h1>
+    <div id="category-container" class="flex flex-wrap gap-2 mb-6"></div>
+    <div id="video-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"></div>
+    <div class="mt-4 flex items-center justify-center gap-4">
+      <button id="prevPage" class="bg-blue-500 text-white px-4 py-2 rounded">上一页</button>
+      <span>第 <span id="currentPage">1</span> 页，共 <span id="totalPage">1</span> 页</span>
+      <button id="nextPage" class="bg-blue-500 text-white px-4 py-2 rounded">下一页</button>
+      <input id="jumpPageInput" type="number" placeholder="跳转页码" class="w-24 border px-2 py-1 rounded">
+      <button onclick="jumpToPage()" class="bg-green-500 text-white px-3 py-1 rounded">跳转</button>
+    </div>
+  </div>
+
+  <!-- 视频弹窗模态框 -->
+    <div id="videoModal" class="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center hidden">
+        <div class="bg-white p-4 rounded-lg shadow-lg w-full sm:max-w-lg md:max-w-xl lg:max-w-3xl relative">
+            <button id="closeModal" class="absolute top-2 right-2 px-4 py-2 bg-red-600 text-white text-lg font-bold rounded-full z-50 hover:bg-red-700 transition">✖</button>
+            <div class="relative w-full flex justify-center">
+                <video id="videoPlayer" class="w-full max-h-[80vh] object-contain rounded-lg" controls></video>
+            </div>
+        </div>
+    </div>
+
+
+
+
+  <!-- 登录模态框 -->
+    <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center hidden">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+            <h2 class="text-xl font-semibold mb-4">用户登录</h2>
+                    <!-- 会员价格说明 -->
+        <p class="text-gray-700 mb-2">永久会员账号8.8元</p>
+            <input type="text" id="username" placeholder="用户名" class="w-full p-2 border rounded mb-2">
+            <input type="password" id="password" placeholder="密码" class="w-full p-2 border rounded mb-2">
+            <button id="submitLogin" class="w-full bg-blue-500 text-white px-4 py-2 rounded">登录</button>
+            <button id="closeLogin" class="mt-2 w-full bg-gray-300 text-black px-4 py-2 rounded">取消</button>
+                    <!-- 购买会员账号按钮 -->
+        <a href="https://www.idatariver.com/zh-cn/project/8r-film%E6%B0%B8%E4%B9%85%E4%BC%9A%E5%91%98%E8%B4%A6%E5%8F%B7-3f11" target="_blank" class="mt-2 block text-center w-full bg-green-500 text-white px-4 py-2 rounded">
+            购买会员账号
+        </a>
+            <p id="loginError" class="text-red-500 hidden mt-2">用户名或密码错误</p>
+        </div>
+    </div>
+
+  <script>
+    let videos = [];
+    let currentCategory = "all";
+    let currentPage = 1;
+    const videosPerPage = 12;
+    let isLoggedIn = false;
+    let currentUser = "";
+    let users = [];
+
+async function loadUsers() {
+    try {
+        const res = await fetch("users.json");
+        users = await res.json();
+    } catch (e) {
+        console.error("无法加载用户数据");
+    }
+}
+
+function validateLogin(username, password) {
+    return users.some(user => user.username === username && user.password === password);
+}
+
+
+    function toggleMenu() {
+      const menu = document.getElementById("navMenu");
+      menu.classList.toggle("hidden");
+    }
+
+    function updateUserInfo() {
+      const info = document.getElementById("userInfo");
+      info.textContent = isLoggedIn ? `${currentUser} | 退出` : "登录";
+    }
+
+    function handleAuthClick() {
+      if (isLoggedIn) {
+        isLoggedIn = false;
+        currentUser = "";
+        alert("已退出登录");
+        updateUserInfo();
+      } else {
+        openLoginModal();
+      }
+    }
+
+async function loadVideos() {
+  const url = "https://8ryy1354.github.io/8Ryingyu/videos.json";// ✅ 这是是加速 https://cdn.jsdelivr.net/gh/Christoph75351/xin2@main/videos.json
+  try {
+    const res = await fetch(url);
+    const json = await res.json();
+    videos = json;  // ✅ 这里正确赋值给 videos
+    generateCategories();
+    renderVideos();
+  } catch (e) {
+    console.warn("无法加载 JSON：" + url);
+  }
+}
+
+
+
+    
+    function generateCategories() {
+      const categoryContainer = document.getElementById('category-container');
+      categoryContainer.innerHTML = '';
+      const categories = ["全部", ...new Set(videos.map(v => v.type_name))];
+      categories.forEach(category => {
+        const btn = document.createElement('button');
+        btn.textContent = category;
+        btn.className = "category-btn px-3 py-1 bg-gray-300 rounded hover:bg-blue-500 hover:text-white";
+        btn.dataset.category = category;
+        btn.onclick = () => {
+          currentCategory = category === "全部" ? "all" : category;
+          currentPage = 1;
+          renderVideos();
+        };
+        categoryContainer.appendChild(btn);
+      });
+    }
+
+    function renderVideos() {
+      const container = document.getElementById("video-container");
+      let filtered = currentCategory === "all" ? videos : videos.filter(v => v.type_name === currentCategory);
+      const start = (currentPage - 1) * videosPerPage;
+      const end = start + videosPerPage;
+      const pageVideos = filtered.slice(start, end);
+      container.innerHTML = '';
+      pageVideos.forEach(v => {
+        const div = document.createElement("div");
+        div.className = "bg-white p-2 shadow rounded hover:shadow-lg transition cursor-pointer";
+        div.innerHTML = `<img src="${v.vod_pic}" class="w-full rounded mb-2"/><div class="text-sm">${v.vod_name}</div>`;
+        div.onclick = () => openVideoModal(v.vod_play_url);
+        container.appendChild(div);
+      });
+      document.getElementById("currentPage").textContent = currentPage;
+      document.getElementById("totalPage").textContent = Math.ceil(filtered.length / videosPerPage);
+    }
+
+function openVideoModal(url) {
+  if (!isLoggedIn) {
+    openLoginModal();
+    return;
+  }
+
+  const modal = document.getElementById("videoModal");
+  const player = document.getElementById("videoPlayer");
+
+  player.pause();
+  player.src = "";
+  modal.classList.remove("hidden");
+
+  if (Hls.isSupported() && url.endsWith(".m3u8")) {
+    const hls = new Hls();
+    hls.loadSource(url);
+    hls.attachMedia(player);
+    window.currentHls = hls;
+  } else {
+    player.src = url;
+  }
+
+  player.play().catch(err => console.warn("播放失败", err));
+}
+
+function closeVideoModal() {
+  const modal = document.getElementById("videoModal");
+  const player = document.getElementById("videoPlayer");
+
+  // 暂停视频播放
+  player.pause();
+  player.src = "";
+
+  // 释放 hls 对象（如果有）
+  if (window.currentHls) {
+    window.currentHls.destroy();
+    window.currentHls = null;
+  }
+
+  modal.classList.add("hidden");
+}
+
+
+
+    document.getElementById("closeModal").onclick = () => {
+      document.getElementById("videoModal").classList.add("hidden");
+      const player = document.getElementById("videoPlayer");
+      player.pause();
+      player.src = "";
+    };
+
+    document.getElementById("prevPage").onclick = () => {
+      if (currentPage > 1) {
+        currentPage--;
+        renderVideos();
+      }
+    };
+    document.getElementById("nextPage").onclick = () => {
+      let filtered = currentCategory === "all" ? videos : videos.filter(v => v.type_name === currentCategory);
+      if (currentPage * videosPerPage < filtered.length) {
+        currentPage++;
+        renderVideos();
+      }
+    };
+
+    function jumpToPage() {
+      const input = document.getElementById("jumpPageInput").value;
+      let page = parseInt(input);
+      let filtered = currentCategory === "all" ? videos : videos.filter(v => v.type_name === currentCategory);
+      const totalPages = Math.ceil(filtered.length / videosPerPage);
+      if (page >= 1 && page <= totalPages) {
+        currentPage = page;
+        renderVideos();
+      }
+    }
+
+    function openLoginModal() {
+      document.getElementById("loginModal").classList.remove("hidden");
+    }
+    function closeLoginModal() {
+      document.getElementById("loginModal").classList.add("hidden");
+    }
+    document.getElementById("closeLogin").onclick = closeLoginModal;
+    document.getElementById("submitLogin").onclick = () => {
+    const u = document.getElementById("username").value;
+    const p = document.getElementById("password").value;
+
+    if (validateLogin(u, p)) {
+        isLoggedIn = true;
+        currentUser = u;
+        closeLoginModal();
+        alert("登录成功");
+        updateUserInfo();
+    } else {
+        document.getElementById("loginError").classList.remove("hidden");
+    }
+};
+
+
+    // 防调试右键
+    window.addEventListener("contextmenu", e => e.preventDefault());
+    document.onkeydown = e => {
+      if (e.key === "F12" || (e.ctrlKey && e.shiftKey && ["I", "J", "C"].includes(e.key))) {
+        e.preventDefault();
+        return false;
+      }
+    };
+
+document.addEventListener("DOMContentLoaded", () => {
+  loadVideos();
+  loadUsers();
+  updateUserInfo();
+});
+
+  </script>
+</body>
+</html>
