@@ -65,14 +65,10 @@
   <!-- 视频弹窗模态框 -->
 <div id="videoModal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center">
   <div class="relative bg-white rounded-lg w-4/5 h-4/5">
-    <button class="absolute top-2 right-2 text-black" onclick="closeVideoModal()">×</button>
+    <button id="videoModalClose" class="absolute top-2 right-2 text-black">×</button>
     <video id="videoPlayer" class="w-full h-full" controls></video> 
   </div>
 </div>
-
-
-
-
 
   <!-- 登录模态框 -->
     <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center hidden">
@@ -320,7 +316,18 @@ document.addEventListener("DOMContentLoaded", () => {
   loadVideos();
   loadUsers();
   updateUserInfo();
+
+  // 确保 videoModalClose 存在后再绑定事件
+  const closeBtn = document.getElementById("videoModalClose");
+  if (closeBtn) {
+    closeBtn.onclick = function() {
+      closeVideoModal();
+    };
+  } else {
+    console.warn("videoModalClose 按钮未找到！");
+  }
 });
+
 
   </script>
 </body>
