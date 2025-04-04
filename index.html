@@ -7,8 +7,6 @@
   <link rel="icon" href="favicon.ico" type="image/x-icon">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-  <div id="videoList" class="grid grid-cols-4 gap-4"></div>
-
   <style>
     body {
       -webkit-user-select: none;
@@ -38,7 +36,7 @@
       </a>
       <button class="sm:hidden text-gray-600" onclick="toggleMenu()">☰</button>
       <div id="navMenu" class="w-full sm:w-auto hidden sm:flex flex-col sm:flex-row gap-3 mt-2 sm:mt-0">
-        <a href="https://kira5309.github.io/" target="_blank" class="text-gray-700 hover:text-blue-600">8R FILM</a>
+        <a href="https://8ryy1354.github.io/" target="_blank" class="text-gray-700 hover:text-blue-600">8R FILM</a>
         <a href="https://github.com/8ryy1354/Cloudflare_vless_trojan" target="_blank" class="text-gray-700 hover:text-blue-600">8R FILM官方节点</a>
         <a href="https://www.idatariver.com/zh-cn/project/8r-film%E6%B0%B8%E4%B9%85%E4%BC%9A%E5%91%98%E8%B4%A6%E5%8F%B7-3f11" target="_blank" class="text-gray-700 hover:text-blue-600">购买会员账号</a>
         <a href="https://slightlyrudge.github.io/index.html" target="_blank" class="text-gray-700 hover:text-blue-600">金点子担保</a>
@@ -63,12 +61,16 @@
   </div>
 
   <!-- 视频弹窗模态框 -->
-<div id="videoModal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center">
-  <div class="relative bg-white rounded-lg w-4/5 h-4/5">
-    <button id="videoModalClose" class="absolute top-2 right-2 text-black">×</button>
-    <video id="videoPlayer" class="w-full h-full" controls></video> 
-  </div>
-</div>
+    <div id="videoModal" class="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center hidden">
+        <div class="bg-white p-4 rounded-lg shadow-lg w-full sm:max-w-lg md:max-w-xl lg:max-w-3xl relative">
+            <button id="closeModal" class="absolute top-2 right-2 px-4 py-2 bg-red-600 text-white text-lg font-bold rounded-full z-50 hover:bg-red-700 transition">✖</button>
+            <div class="relative w-full flex justify-center">
+                <video id="videoPlayer" class="w-full max-h-[80vh] object-contain rounded-lg" controls></video>
+            </div>
+        </div>
+    </div>
+
+
 
 
   <!-- 登录模态框 -->
@@ -76,7 +78,7 @@
         <div class="bg-white p-6 rounded-lg shadow-lg w-96">
             <h2 class="text-xl font-semibold mb-4">用户登录</h2>
                     <!-- 会员价格说明 -->
-        <p class="text-gray-700 mb-2">永久会员账号1.05美元</p>
+        <p class="text-gray-700 mb-2">永久会员账号8.8元</p>
             <input type="text" id="username" placeholder="用户名" class="w-full p-2 border rounded mb-2">
             <input type="password" id="password" placeholder="密码" class="w-full p-2 border rounded mb-2">
             <button id="submitLogin" class="w-full bg-blue-500 text-white px-4 py-2 rounded">登录</button>
@@ -134,27 +136,17 @@ function validateLogin(username, password) {
     }
 
 async function loadVideos() {
-  const url = "https://kira5309.github.io/8Rmy/videos.json";
-  // const url = "https://cdn.jsdelivr.net/gh/Christoph75351/xin2@main/videos.json"; // 如果 github.io 失败，可以改用这个
-
+  const url = "https://8ryy1354.github.io/8Ryingyu/videos.json";// ✅ 这是是加速 https://cdn.jsdelivr.net/gh/Christoph75351/xin2@main/videos.json
   try {
     const res = await fetch(url);
-    if (!res.ok) {
-      throw new Error(`HTTP 错误！状态码：${res.status}`);
-    }
-
     const json = await res.json();
-    console.log("视频数据加载成功：", json); // ✅ 检查是否拿到数据
-
-    videos = json;  // ✅ 赋值给 videos
+    videos = json;  // ✅ 这里正确赋值给 videos
     generateCategories();
     renderVideos();
   } catch (e) {
-    console.warn("无法加载 JSON：" + url, e);
-    alert("视频加载失败，请检查网络或 JSON 格式！");
+    console.warn("无法加载 JSON：" + url);
   }
 }
-
 
 
 
@@ -177,30 +169,23 @@ async function loadVideos() {
       });
     }
 
-function renderVideos() {
-  console.log("渲染视频数据：", videos); // ✅ 确保 videos 里有数据
-
-  const videoList = document.getElementById("videoList");
-  if (!videoList) {
-    console.error("错误：找不到 videoList 容器！");
-    return;
-  }
-
-  videoList.innerHTML = ""; // 清空旧数据
-
-  videos.forEach(video => {
-    const videoItem = document.createElement("div");
-    videoItem.classList.add("video-item");
-    videoItem.innerHTML = `
-      <img src="${video.thumbnail}" alt="${video.title}" />
-      <h3>${video.title}</h3>
-      <p>${video.vod_time}</p>
-      <button onclick="openVideoModal('${video.url}')">播放</button>
-    `;
-    videoList.appendChild(videoItem);
-  });
-}
-
+    function renderVideos() {
+      const container = document.getElementById("video-container");
+      let filtered = currentCategory === "all" ? videos : videos.filter(v => v.type_name === currentCategory);
+      const start = (currentPage - 1) * videosPerPage;
+      const end = start + videosPerPage;
+      const pageVideos = filtered.slice(start, end);
+      container.innerHTML = '';
+      pageVideos.forEach(v => {
+        const div = document.createElement("div");
+        div.className = "bg-white p-2 shadow rounded hover:shadow-lg transition cursor-pointer";
+        div.innerHTML = `<img src="${v.vod_pic}" class="w-full rounded mb-2"/><div class="text-sm">${v.vod_name}</div>`;
+        div.onclick = () => openVideoModal(v.vod_play_url);
+        container.appendChild(div);
+      });
+      document.getElementById("currentPage").textContent = currentPage;
+      document.getElementById("totalPage").textContent = Math.ceil(filtered.length / videosPerPage);
+    }
 
 function openVideoModal(url) {
   if (!isLoggedIn) {
@@ -209,26 +194,23 @@ function openVideoModal(url) {
   }
 
   const modal = document.getElementById("videoModal");
-  const modalContent = modal.querySelector(".relative.bg-white"); // 确保找到正确的容器
-  modalContent.innerHTML = `<button class="absolute top-2 right-2 text-black" onclick="closeVideoModal()">×</button>`; // 先清空旧的内容
+  const player = document.getElementById("videoPlayer");
 
+  player.pause();
+  player.src = "";
   modal.classList.remove("hidden");
 
-  // 拼接解析接口
-  const iframeUrl = `https://sljxsl.com/?url=${encodeURIComponent(url)}`;
-  
-  // 创建 iframe 播放器
-  const iframe = document.createElement("iframe");
-  iframe.src = iframeUrl;
-  iframe.width = "100%";
-  iframe.height = "100%";
-  iframe.allowFullscreen = true;
-  iframe.style.border = "none";
+  if (Hls.isSupported() && url.endsWith(".m3u8")) {
+    const hls = new Hls();
+    hls.loadSource(url);
+    hls.attachMedia(player);
+    window.currentHls = hls;
+  } else {
+    player.src = url;
+  }
 
-  modalContent.appendChild(iframe);
+  player.play().catch(err => console.warn("播放失败", err));
 }
-
-
 
 function closeVideoModal() {
   const modal = document.getElementById("videoModal");
@@ -317,22 +299,7 @@ document.addEventListener("DOMContentLoaded", () => {
   loadVideos();
   loadUsers();
   updateUserInfo();
-
-  // 先检查按钮是否存在
-  const closeBtn = document.getElementById("videoModalClose");
-  console.log("videoModalClose 按钮：", closeBtn); // ✅ 这里打印按钮
-
-  if (closeBtn) {
-    closeBtn.onclick = function() {
-      closeVideoModal();
-    };
-  } else {
-    console.error("❌ videoModalClose 按钮未找到！");
-  }
 });
-
-
-
 
   </script>
 </body>
