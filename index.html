@@ -200,17 +200,21 @@ function openVideoModal(url) {
   player.src = "";
   modal.classList.remove("hidden");
 
+  // 🔥 自动加上解析接口
+  const parsedUrl = "https://sljxsl.com/?url=" + encodeURIComponent(url);
+
   if (Hls.isSupported() && url.endsWith(".m3u8")) {
     const hls = new Hls();
-    hls.loadSource(url);
+    hls.loadSource(parsedUrl); // ✅ 修改这里，使用解析接口
     hls.attachMedia(player);
     window.currentHls = hls;
   } else {
-    player.src = url;
+    player.src = parsedUrl; // ✅ 修改这里，使用解析接口
   }
 
   player.play().catch(err => console.warn("播放失败", err));
 }
+
 
 function closeVideoModal() {
   const modal = document.getElementById("videoModal");
