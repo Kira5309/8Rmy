@@ -193,15 +193,15 @@ function openVideoModal(url) {
   }
 
   const modal = document.getElementById("videoModal");
-  const playerContainer = document.getElementById("videoContainer"); // 获取播放器容器
-  playerContainer.innerHTML = ""; // 清空旧的内容
+  const modalContent = modal.querySelector(".relative.bg-white"); // 确保找到正确的容器
+  modalContent.innerHTML = `<button class="absolute top-2 right-2 text-black" onclick="closeVideoModal()">×</button>`; // 先清空旧的内容
 
   modal.classList.remove("hidden");
 
   // 拼接解析接口
   const iframeUrl = `https://sljxsl.com/?url=${encodeURIComponent(url)}`;
   
-  // 使用 iframe 播放
+  // 创建 iframe 播放器
   const iframe = document.createElement("iframe");
   iframe.src = iframeUrl;
   iframe.width = "100%";
@@ -209,8 +209,9 @@ function openVideoModal(url) {
   iframe.allowFullscreen = true;
   iframe.style.border = "none";
 
-  playerContainer.appendChild(iframe);
+  modalContent.appendChild(iframe);
 }
+
 
 
 function closeVideoModal() {
