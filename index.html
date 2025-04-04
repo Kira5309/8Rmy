@@ -196,11 +196,12 @@ function openVideoModal(url) {
   const modal = document.getElementById("videoModal");
   const player = document.getElementById("videoPlayer");
 
-  player.pause();  // ✅ 先暂停，确保不会有多个视频同时播放
-  player.src = ""; // ✅ 清空视频源，防止上次播放残留
+  player.pause();
+  player.src = "";
   modal.classList.remove("hidden");
 
   const parsedUrl = "https://sljxsl.com/?url=" + encodeURIComponent(url);
+  console.log("解析后的视频链接：", parsedUrl); // ✅ 打印最终URL，检查是否正确
 
   if (Hls.isSupported() && url.endsWith(".m3u8")) {
     const hls = new Hls();
@@ -208,20 +209,21 @@ function openVideoModal(url) {
     hls.attachMedia(player);
     window.currentHls = hls;
 
+    // ✅ 监听错误信息
+    hls.on(Hls.Events.ERROR, function (event, data) {
+      console.error("Hls.js 播放错误：", data);
+    });
+
     hls.on(Hls.Events.MANIFEST_PARSED, function () {
-      setTimeout(() => {
-        player.play().catch(err => console.warn("播放失败", err));
-      }, 100); // ✅ 延迟播放，避免 `AbortError`
+      console.log("Hls.js 解析完成，开始播放");
+      player.play().catch(err => console.warn("播放失败", err));
     });
 
   } else {
     player.src = parsedUrl;
-
-    // ✅ 确保 `play()` 在 `src` 赋值后执行
     player.onloadedmetadata = () => {
-      setTimeout(() => {
-        player.play().catch(err => console.warn("播放失败", err));
-      }, 100);
+      console.log("普通视频元数据加载完成，尝试播放");
+      player.play().catch(err => console.warn("播放失败", err));
     };
   }
 }
