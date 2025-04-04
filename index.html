@@ -70,6 +70,7 @@
   </div>
 </div>
 
+
   <!-- 登录模态框 -->
     <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center hidden">
         <div class="bg-white p-6 rounded-lg shadow-lg w-96">
@@ -317,17 +318,19 @@ document.addEventListener("DOMContentLoaded", () => {
   loadUsers();
   updateUserInfo();
 
-  setTimeout(() => {  // 延迟执行，确保 DOM 渲染完成
-    const closeBtn = document.getElementById("videoModalClose");
-    if (closeBtn) {
-      closeBtn.onclick = function() {
-        closeVideoModal();
-      };
-    } else {
-      console.warn("videoModalClose 按钮未找到！");
-    }
-  }, 1000); // 1秒后检查是否存在
+  // 先检查按钮是否存在
+  const closeBtn = document.getElementById("videoModalClose");
+  console.log("videoModalClose 按钮：", closeBtn); // ✅ 这里打印按钮
+
+  if (closeBtn) {
+    closeBtn.onclick = function() {
+      closeVideoModal();
+    };
+  } else {
+    console.error("❌ videoModalClose 按钮未找到！");
+  }
 });
+
 
 
 
