@@ -180,23 +180,30 @@ async function loadVideos() {
       });
     }
 
-    function renderVideos() {
-      const container = document.getElementById("video-container");
-      let filtered = currentCategory === "all" ? videos : videos.filter(v => v.type_name === currentCategory);
-      const start = (currentPage - 1) * videosPerPage;
-      const end = start + videosPerPage;
-      const pageVideos = filtered.slice(start, end);
-      container.innerHTML = '';
-      pageVideos.forEach(v => {
-        const div = document.createElement("div");
-        div.className = "bg-white p-2 shadow rounded hover:shadow-lg transition cursor-pointer";
-        div.innerHTML = `<img src="${v.vod_pic}" class="w-full rounded mb-2"/><div class="text-sm">${v.vod_name}</div>`;
-        div.onclick = () => openVideoModal(v.vod_play_url);
-        container.appendChild(div);
-      });
-      document.getElementById("currentPage").textContent = currentPage;
-      document.getElementById("totalPage").textContent = Math.ceil(filtered.length / videosPerPage);
-    }
+function renderVideos() {
+  console.log("渲染视频数据：", videos); // ✅ 确保 videos 里有数据
+
+  const videoList = document.getElementById("videoList");
+  if (!videoList) {
+    console.error("错误：找不到 videoList 容器！");
+    return;
+  }
+
+  videoList.innerHTML = ""; // 清空旧数据
+
+  videos.forEach(video => {
+    const videoItem = document.createElement("div");
+    videoItem.classList.add("video-item");
+    videoItem.innerHTML = `
+      <img src="${video.thumbnail}" alt="${video.title}" />
+      <h3>${video.title}</h3>
+      <p>${video.vod_time}</p>
+      <button onclick="openVideoModal('${video.url}')">播放</button>
+    `;
+    videoList.appendChild(videoItem);
+  });
+}
+
 
 function openVideoModal(url) {
   if (!isLoggedIn) {
