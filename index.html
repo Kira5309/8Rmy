@@ -61,14 +61,13 @@
   </div>
 
   <!-- 视频弹窗模态框 -->
-    <div id="videoModal" class="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center hidden">
-        <div class="bg-white p-4 rounded-lg shadow-lg w-full sm:max-w-lg md:max-w-xl lg:max-w-3xl relative">
-            <button id="closeModal" class="absolute top-2 right-2 px-4 py-2 bg-red-600 text-white text-lg font-bold rounded-full z-50 hover:bg-red-700 transition">✖</button>
-            <div class="relative w-full flex justify-center">
-                <video id="videoPlayer" class="w-full max-h-[80vh] object-contain rounded-lg" controls></video>
-            </div>
-        </div>
-    </div>
+<div id="videoModal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center">
+  <div class="relative bg-white rounded-lg w-4/5 h-4/5">
+    <button class="absolute top-2 right-2 text-black" onclick="closeVideoModal()">×</button>
+    <video id="videoPlayer" class="w-full h-full" controls></video> 
+  </div>
+</div>
+
 
 
 
