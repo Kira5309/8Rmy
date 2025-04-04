@@ -193,27 +193,23 @@ function openVideoModal(url) {
   }
 
   const modal = document.getElementById("videoModal");
-  const player = document.getElementById("videoPlayer");
+  const playerContainer = document.getElementById("videoContainer"); // 获取播放器容器
+  playerContainer.innerHTML = ""; // 清空旧的内容
 
-  player.pause();
-  player.src = "";
   modal.classList.remove("hidden");
 
-  // 添加解析接口
-  if (url.endsWith(".m3u8")) {
-    url = `https://sljxsl.com/?url=${encodeURIComponent(url)}`;
-  }
+  // 拼接解析接口
+  const iframeUrl = `https://sljxsl.com/?url=${encodeURIComponent(url)}`;
+  
+  // 使用 iframe 播放
+  const iframe = document.createElement("iframe");
+  iframe.src = iframeUrl;
+  iframe.width = "100%";
+  iframe.height = "100%";
+  iframe.allowFullscreen = true;
+  iframe.style.border = "none";
 
-  if (Hls.isSupported() && url.endsWith(".m3u8")) {
-    const hls = new Hls();
-    hls.loadSource(url);
-    hls.attachMedia(player);
-    window.currentHls = hls;
-  } else {
-    player.src = url;
-  }
-
-  player.play().catch(err => console.warn("播放失败", err));
+  playerContainer.appendChild(iframe);
 }
 
 
