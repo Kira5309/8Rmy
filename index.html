@@ -317,16 +317,18 @@ document.addEventListener("DOMContentLoaded", () => {
   loadUsers();
   updateUserInfo();
 
-  // 确保 videoModalClose 存在后再绑定事件
-  const closeBtn = document.getElementById("videoModalClose");
-  if (closeBtn) {
-    closeBtn.onclick = function() {
-      closeVideoModal();
-    };
-  } else {
-    console.warn("videoModalClose 按钮未找到！");
-  }
+  setTimeout(() => {  // 延迟执行，确保 DOM 渲染完成
+    const closeBtn = document.getElementById("videoModalClose");
+    if (closeBtn) {
+      closeBtn.onclick = function() {
+        closeVideoModal();
+      };
+    } else {
+      console.warn("videoModalClose 按钮未找到！");
+    }
+  }, 1000); // 1秒后检查是否存在
 });
+
 
 
   </script>
