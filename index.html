@@ -196,24 +196,36 @@ function openVideoModal(url) {
   const modal = document.getElementById("videoModal");
   const player = document.getElementById("videoPlayer");
 
-  player.pause();
-  player.src = "";
+  player.pause();  // ✅ 先暂停，确保不会有多个视频同时播放
+  player.src = ""; // ✅ 清空视频源，防止上次播放残留
   modal.classList.remove("hidden");
 
-  // 🔥 自动加上解析接口
   const parsedUrl = "https://sljxsl.com/?url=" + encodeURIComponent(url);
 
   if (Hls.isSupported() && url.endsWith(".m3u8")) {
     const hls = new Hls();
-    hls.loadSource(parsedUrl); // ✅ 修改这里，使用解析接口
+    hls.loadSource(parsedUrl);
     hls.attachMedia(player);
     window.currentHls = hls;
-  } else {
-    player.src = parsedUrl; // ✅ 修改这里，使用解析接口
-  }
 
-  player.play().catch(err => console.warn("播放失败", err));
+    hls.on(Hls.Events.MANIFEST_PARSED, function () {
+      setTimeout(() => {
+        player.play().catch(err => console.warn("播放失败", err));
+      }, 100); // ✅ 延迟播放，避免 `AbortError`
+    });
+
+  } else {
+    player.src = parsedUrl;
+
+    // ✅ 确保 `play()` 在 `src` 赋值后执行
+    player.onloadedmetadata = () => {
+      setTimeout(() => {
+        player.play().catch(err => console.warn("播放失败", err));
+      }, 100);
+    };
+  }
 }
+
 
 
 function closeVideoModal() {
